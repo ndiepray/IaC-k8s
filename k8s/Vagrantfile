@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+ # kube-control1 VM
+ config.vm.define "kube-control1" do |config|
+  config.vm.box = "ubuntu/focal64"
+  config.vm.provider "virtualbox" do |vb|
+	vb.name = "kube-control1"
+	vb.cpus = 2
+	vb.memory = 2048
+  end
+  config.vm.hostname = "kube-control1"
+  config.vm.network "private_network", ip: "192.168.100.11"
+ end
+
+# kube-node1 VM
+ config.vm.define "kube-node1" do |config|
+  config.vm.box = "ubuntu/focal64"
+  config.vm.provider "virtualbox" do |vb|
+	vb.name = "kube-node1"
+	vb.cpus = 2
+	vb.memory = 2048
+  end
+  config.vm.hostname = "kube-node1"
+  config.vm.network "private_network", ip: "192.168.100.21"
+ end
+
+# kube-node2 VM
+ config.vm.define "kube-node2" do |config|
+  config.vm.box = "ubuntu/focal64"
+  config.vm.provider "virtualbox" do |vb|
+	vb.name = "kube-node2"
+	vb.cpus = 2
+	vb.memory = 2048
+  end
+  config.vm.hostname = "kube-node2"
+  config.vm.network "private_network", ip: "192.168.100.22"
+ end
+
+# Hostmanager Plugin
+config.hostmanager.enabled = true
+config.hostmanager.manage_guest = true
+
+# Provision
+ config.vm.provision "shell", inline: <<-SHELL
+  sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
+  sed -i 's/archive.ubuntu.com/ftp.daum.net/g' /etc/apt/sources.list
+  sed -i 's/security.ubuntu.com/ftp.daum.net/g' /etc/apt/sources.list
+  systemctl restart ssh
+  apt update
+  apt install -y chrony
+ SHELL
+end
